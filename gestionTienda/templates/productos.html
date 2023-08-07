@@ -1,0 +1,257 @@
+<html>
+    <head>
+        <title>PRODUCTOS</title>
+        <meta charset="utf-8">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+
+
+    </head>
+    <body>
+        <!--nabvar-->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                  <li class="nav-item ">
+                    <a class="nav-link " href="/gestionTienda">Gestión Tienda</a>
+                  </li>
+                  <li class="nav-item ">
+                    <a class="nav-link active" href="/gestionTienda/productos">Productos</a>
+                  </li>
+                  <li class="nav-item ">
+                    <a class="nav-link " href="/gestionTienda/tiendas">Tiendas</a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+        </nav>
+        <!--contenido-->
+        <div class="container">
+            <h1>Listado de Productos</h1>
+          
+            <!-- Botón para abrir el modal de agregar producto -->
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#agregarProductoModal">
+              NUEVO 
+            </button>
+
+        <!--tabla-->
+        <div class="mt-4">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">N°</th>
+                        <th scope="col">Código</th>
+                        <th scope="col">Nombre</th>
+                        <th scope="col">Precio</th>
+                        <th scope="col">Stock</th>
+                        <th scope="col">Tienda</th>
+                        <th scope="col">Editar</th>
+                        <th scope="col">Eliminar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for producto in productos %}
+                    <tr>
+                        <th scope="row">{{ forloop.counter }}</th>
+                        <td>{{ producto.codigo }}</td>
+                        <td>{{ producto.descripcion }}</td>
+                        <td>{{ producto.precioVenta }}</td>
+                        <td>{{ producto.cantidad }}</td>
+                        <td>{{ producto.tienda.direccion }}</td>
+                        <td>
+                            <a href="#" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editarProductoModal" onclick="editarModal({{producto.id}},'{{producto.codigo}}','{{producto.descripcion}}','{{producto.precioVenta}}','{{ producto.cantidad }}',{{producto.tienda.id}})">Editar</a>
+                        </td>
+                        <td>
+                            <a href="#" class="btn btn-danger" onclick="eliminarProducto({{producto.id}})">Eliminar</a>
+                        </td>
+                            
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        </div>
+        <!-- Modal para agregar producto -->
+        <div class="modal fade" id="agregarProductoModal" tabindex="-1" role="dialog" aria-labelledby="agregarProductoModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Agregar Producto</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Formulario para agregar un producto -->
+                        <form id="saveForm" method="post" action="productos/save">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="codigo" class="form-label">Código</label>
+                                <input type="text" class="form-control" id="codigo" name="codigo" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="descripcion" class="form-label">Nombre</label>
+                                <input type="text" class="form-control" id="descripcion" name="descripcion" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="precioVenta" class="form-label">Precio</label>
+                                <input type="number" class="form-control" id="precioVenta" name="precioVenta" step="0.01" required >
+                            </div>
+                            <div class="mb-3">
+                                <label for="cantidad" class="form-label">Stock</label>
+                                <input type="number" class="form-control" id="cantidad" name="cantidad" required >
+                            </div>
+                            <div class="mb-3">
+                                <label for="tienda" class="form-label">Tienda</label>
+                                <select class="form-control" id="tienda" name="tienda" required>
+                                    <option value="" selected>Selecciona una tienda</option>
+                                    {% for tienda in tiendas %}
+                                        <option value="{{tienda.id}}">{{tienda.direccion}}</option>
+                                    {% endfor %}
+                                    <!-- Agrega más opciones si tienes más tiendas -->
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary" onclick="registrarProducto()" >Registrar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Modal para editar producto -->
+        
+        <div class="modal fade" id="editarProductoModal" tabindex="-1" role="dialog" aria-labelledby="editarProductoModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Editar Producto</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Formulario para agregar un producto -->
+                        <form id="editForm" method="post" action="#">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="codigo_edit" class="form-label">Código</label>
+                                <input type="text" class="form-control" id="codigo_edit" name="codigo_edit" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="descripcion_edit" class="form-label">Nombre</label>
+                                <input type="text" class="form-control" id="descripcion_edit" name="descripcion_edit" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="precioVenta_edit" class="form-label">Precio</label>
+                                <input type="number" class="form-control" id="precioVenta_edit" name="precioVenta_edit" step="0.01" required >
+                            </div>
+                            <div class="mb-3">
+                                <label for="cantidad_edit" class="form-label">Stock</label>
+                                <input type="number" class="form-control" id="cantidad_edit" name="cantidad_edit" required >
+                            </div>
+                            <div class="mb-3">
+                                <label for="tienda" class="form-label">Tienda</label>
+                                <select class="form-control" id="tienda_edit" name="tienda_edit" required>
+                                    <option value="" selected>Selecciona una tienda</option>
+                                    {% for tienda in tiendas %}
+                                        <option value="{{tienda.id}}">{{tienda.direccion}}</option>
+                                    {% endfor %}
+                                    <!-- Agrega más opciones si tienes más tiendas -->
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary" onclick="EditarProducto()" >Guardar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
+<script>
+    function eliminarProducto(productoId) {
+        console.log('csrfToken:', document.getElementsByName('csrfmiddlewaretoken'));
+        if (confirm('¿Estás seguro de que deseas eliminar este producto?')) {
+            var csrfToken = document.getElementsByName('csrfmiddlewaretoken')[0].value;
+
+            fetch('productos/delete/' + productoId + '/', {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'Content-Type': 'application/json' // Puedes ajustar el tipo de contenido según tus necesidades
+                },
+            })
+            .then(function(response) {
+                if (response.ok) {
+                    alert('El producto fue eliminado exitosamente.');
+                    // Redirigir a la misma pagina después de eliminar
+                    window.location.href = '/gestionTienda/productos';
+                } else {
+                    alert('Ocurrió un error al intentar eliminar el producto.');
+                }
+            })
+            .catch(function(error) {
+                console.log('Error en la solicitud:', error);
+                alert('Ocurrió un error al intentar eliminar el producto.');
+            });
+        }
+    }
+    
+    function registrarProducto() {
+        var form = document.getElementById('saveForm');
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+        });
+        var url = form.getAttribute('action');  
+        var formData = new FormData(form);
+
+        fetch(url, {
+            method: 'POST',
+            body: formData
+        })
+        .then(function(response) {
+            if (response.ok) {
+                alert('Producto registrado exitosamente.');
+                // Puedes realizar alguna acción adicional después de registrar el producto.
+                window.location.href = '/gestionTienda/productos';
+            } else {
+                alert('Ocurrió un error al intentar registrar el producto.');
+            }
+        })
+        .catch(function(error) {
+            console.log('Error en la solicitud:', error);
+            alert('Ocurrió un error al intentar registrar el producto.');
+        });
+    }
+    
+    function editarModal(id,codigo,descripcion,precioVenta,cantidad,tienda){
+        document.getElementById('codigo_edit').value = codigo;
+        document.getElementById('descripcion_edit').value = descripcion;
+        document.getElementById('precioVenta_edit').value = precioVenta;
+        document.getElementById('cantidad_edit').value = cantidad;
+        document.getElementById('tienda_edit').value = tienda;
+        document.getElementById('editForm').action = 'productos/'+id+'/';
+    }
+    function EditarProducto() {
+        var form = document.getElementById('editForm');
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+        });
+        var url = form.getAttribute('action');  
+        var formData = new FormData(form);
+
+        fetch(url, {
+            method: 'POST',
+            body: formData
+        })
+        .then(function(response) {
+            if (response.ok) {
+                alert('Producto editado exitosamente.');
+                // Puedes realizar alguna acción adicional después de registrar el producto.
+                window.location.href = '/gestionTienda/productos';
+            } else {
+                alert('Ocurrió un error al intentar editar el producto.');
+            }
+        })
+        .catch(function(error) {
+            console.log('Error en la solicitud:', error);
+            alert('Ocurrió un error al intentar editar el producto.');
+        });
+    }
+</script>

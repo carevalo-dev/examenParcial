@@ -1,0 +1,108 @@
+<html>
+    <head>
+        <title>DETALLE TIENDAS</title>
+        <meta charset="utf-8">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+    </head>
+    <body>
+        <!--nabvar-->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                  <li class="nav-item ">
+                    <a class="nav-link " href="/gestionTienda">Gestión Tienda</a>
+                  </li>
+                  <li class="nav-item ">
+                    <a class="nav-link " href="/gestionTienda/productos">Productos</a>
+                  </li>
+                  <li class="nav-item ">
+                    <a class="nav-link active" href="/gestionTienda/tiendas">Tiendas</a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+        </nav>
+        <!--contenido-->
+        <div class="container my-4">
+            <!--DETALLES DE TIENDA-->
+            <div class="jumbotron mt-4">
+                <h2 class="display-6">Detalles de la tienda</h2>
+                <p class="lead">Aquí encontrarás los detalles de la tienda seleccionada.</p>
+                <!--botones-->
+                <a href="/gestionTienda/tiendas" class="btn btn-danger btn-sm">Volver</a>
+                <hr class="my-4">
+                <p>Dirección: {{ tienda.direccion }}</p>
+                <p>Provincia: {{tienda.provincia}}</p>
+                <p>Región: {{tienda.region}}</p>
+                <p>Fecha Creación: {{tienda.fechaCreacion}}</p>
+                <p>Teléfono: {{ tienda.telefono }}</p>
+                <hr class="my-4">
+                {% csrf_token %}
+            </div>
+            <h2>Listado de Productos en la tienda</h2>
+            <!--tabla-->
+            <div class="mt-4">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">N°</th>
+                            <th scope="col">Código</th>
+                            <th scope="col">Nombre</th>
+                            <th scope="col">Precio</th>
+                            <th scope="col">Stock</th>
+                            <th scope="col">Eliminar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for producto in productos %}
+                        <tr>
+                            <th scope="row">{{ forloop.counter }}</th>
+                            <td>{{ producto.codigo }}</td>
+                            <td>{{ producto.descripcion }}</td>
+                            <td>{{ producto.precioVenta }}</td>
+                            <td>{{ producto.cantidad }}</td>
+                            <td>
+                                <a href="#" class="btn btn-danger" onclick="eliminarProducto({{producto.id}},{{ tienda.id }})">Eliminar</a>
+                            </td>
+                                
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </body>
+</html>
+<script >
+  function eliminarProducto(productoId,tiendaId) {
+        if (confirm('¿Estás seguro de que deseas eliminar este producto?')) {
+            var csrfToken = document.getElementsByName('csrfmiddlewaretoken')[0].value;
+            var url = 
+            fetch('/gestionTienda/productos/delete/' + productoId + '/', {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'Content-Type': 'application/json' // Puedes ajustar el tipo de contenido según tus necesidades
+                },
+            })
+            .then(function(response) {
+                if (response.ok) {
+                    alert('El producto fue eliminado exitosamente.');
+                    // Redirigir a la misma pagina después de eliminar
+                    window.location.href = '/gestionTienda/tiendas/' + tiendaId + '/';
+                } else {
+                    alert('Ocurrió un error al intentar eliminar el producto.');
+                }
+            })
+            .catch(function(error) {
+                console.log('Error en la solicitud:', error);
+                alert('Ocurrió un error al intentar eliminar el producto.');
+            });
+        }
+    }
+</script>
